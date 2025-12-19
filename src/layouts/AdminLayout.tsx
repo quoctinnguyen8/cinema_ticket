@@ -1,6 +1,23 @@
-import { Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { supabase } from '../utils/appUtil';
 
 function AdminLayout() {
+
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        (async () => {
+            const res = await supabase.auth.getSession()
+            if (res.data.session) {
+                // đã đăng nhập
+            } else {
+                // chưa đăng nhập => chuyển về trang login
+                navigate('/dang-nhap')
+            }
+        })()
+    }, [])
+
 
     return (
         <>
