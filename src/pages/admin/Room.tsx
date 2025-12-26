@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../utils/appUtil";
-import type { Room, RoomListItem } from "../../types/room";
+import type { Room as RoomType, RoomListItem } from "../../types/room";
 import AppModal from "../../components/AppModal";
 
 function Room() {
@@ -56,7 +56,7 @@ function Room() {
         
         const {data, status} = await supabase.from("rooms").select().eq('id', id);
         if (status === 200 && data) {
-            const room = (data as Room[])[0];
+            const room = (data as RoomType[])[0];
             if (room) {
                 setRoomName(room.room_name ?? '')
                 setRoomId(room.id)
