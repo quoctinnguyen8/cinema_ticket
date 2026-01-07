@@ -2,9 +2,21 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../utils/appUtil";
 import type { Room as RoomType, RoomListItem } from "../../types/room";
 import AppModal from "../../components/AppModal";
+import { useForm } from "react-hook-form";
+
+type RoomForm = {
+    room_name: string;
+}
 
 function Room() {
     const [rooms, setRooms] = useState<RoomListItem[]>([]);
+
+    const {
+        formState: { errors },
+        register,
+        handleSubmit,
+        setValue
+       } = useForm<RoomForm>();
 
     async function loadRooms() {
         const { data, error } = await supabase.from("rooms").select();
@@ -20,24 +32,22 @@ function Room() {
         loadRooms();
     }, []);
 
-    const [roomName, setRoomName] = useState('')
-    async function upsertRoom() {
+    // const [roomName, setRoomName] = useState('')
+    async function upsertRoom(formData: RoomForm) {
         let res;
         if (roomId === 0) {
-            res = await supabase.from('rooms').insert({
-                room_name: roomName
-            })
+            res = await supabase.from('rooms').insert(formData)
         } else {
             res = await supabase.from('rooms').upsert({
                 id: roomId,
-                room_name: roomName
+                ...formData
             })
         }
 
         if (res.status === 201 || res.status === 200) {
             loadRooms()
             setShow(false)
-            setRoomName('')
+            setValue("room_name", '')
         }
     }
 
@@ -45,7 +55,7 @@ function Room() {
     function showModal(headerText: string) {
         setMHeader(headerText)
         setShow(true)
-        setRoomName('')
+        setValue("room_name", '')
         setRoomId(0)
     }
 
@@ -58,7 +68,7 @@ function Room() {
         if (status === 200 && data) {
             const room = (data as RoomType[])[0];
             if (room) {
-                setRoomName(room.room_name ?? '')
+                setValue("room_name", room.room_name ?? '')
                 setRoomId(room.id)
             }
         }
@@ -155,15 +165,15 @@ function Room() {
 
             {/* Form thêm mới phòng */}
             <AppModal show={show} onHide={() => setShow(false)} headerText={mHeader}>
-                <form>
+                <form onSubmit={handleSubmit(upsertRoom)}>
                     <div className="mt-3">
                         <label className="form-label">Tên phòng</label>
-                        <input type="text" className="form-control" 
-                            value={roomName}
-                            onChange={(ev) => setRoomName(ev.target.value)} />
+                        <input {...register("room_name", {required: true})} className="form-control" />
+                        {errors.room_name?.type == "required" && 
+                            <span className="text-danger d-inline-block mt-1">Tên phòng là bắt buộc</span>}
                     </div>
                     <div className="mt-3">
-                        <button type="button" onClick={upsertRoom} className="btn btn-success">
+                        <button type="submit" className="btn btn-success">
                             Lưu
                         </button>
                     </div>

@@ -23,12 +23,11 @@ function SelectRating({selectedId, onChange}: SelectRatingProps) {
 
     return (
         <>
-            <select onChange={(ev) => onChange && onChange(Number(ev.target.value))}
+            <select value={selectedId} onChange={(ev) => onChange && onChange(Number(ev.target.value))}
                 className="form-select">
-                <option>--Chọn 1 giá trị--</option>
+                <option value={0}>--Chọn 1 giá trị--</option>
                 {ratings.map(rating => (
                     <option key={rating.id} 
-                        selected={selectedId === rating.id}
                         value={rating.id}
                     >{rating.name}</option>
                 ))}
